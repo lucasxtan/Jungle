@@ -2,6 +2,8 @@ class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   
+  include HttpAuthConcern
+
   protect_from_forgery with: :exception
 
   private
@@ -10,6 +12,7 @@ class ApplicationController < ActionController::Base
     @cart ||= cookies[:cart].present? ? JSON.parse(cookies[:cart]) : {}
   end
   helper_method :cart
+
 
   def enhanced_cart
     @enhanced_cart ||= Product.where(id: cart.keys).map {|product| { product:product, quantity: cart[product.id.to_s] } }
@@ -21,6 +24,22 @@ class ApplicationController < ActionController::Base
   end
   helper_method :cart_subtotal_cents
 
+  def order_subtotal_cents
+    
+    price = 0
+    @order.line_items.each do |item|
+      Rails.logger.info "order #{Order.find_by_id(@order.id).email}"
+      price += item.product.price * item[:quantity].to_i
+    end
+    price
+  end 
+  helper_method :order_subtotal_cents
+
+  def order_email
+    Order.find_by_id(@order.id).email
+  end
+  helper_method :order_email
+
 
   def update_cart(new_cart)
     cookies[:cart] = {
@@ -29,4 +48,5 @@ class ApplicationController < ActionController::Base
     }
     cookies[:cart]
   end
+
 end
