@@ -1,5 +1,10 @@
 
 describe('My First Test', () => {
+
+  it("visit the homepage", () => {
+    cy.visit("/")
+  });
+
   it("There is products on the page", () => {
     cy.get(".products article").should("be.visible");
   });
